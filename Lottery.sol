@@ -51,6 +51,18 @@ contract Lottery {
         }
     }
 
+    function getContributionForAddress(address _address) public view returns (uint256) {
+        return contributions[_address];
+    }
+
+    function getPickedOptionForAddress(address _address) public view returns (string memory) {
+        return getStringRepresentation(pickedOptions[_address]);
+    }
+
+    function didAddressWin(address _address) public view returns (bool) {
+        return winners[_address];
+    }
+
     function enter(Option _option) public payable minimumEther {
         if (wallets[msg.sender] == false) {
             addresses.push(msg.sender);
