@@ -4,17 +4,25 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
+//RULES
+//Player can enter only once - he cannot add more to his bet
+//Player must enter at least minimum entrance value
+//Lottery is resolved once and then smart contract is unusable apart from withdrawing any remaining balance to owner
+//
+
 contract Lottery is VRFConsumerBase {
     AggregatorV3Interface internal priceFeed;
     mapping (address => bool) public wallets;
     address[] public addresses;
     mapping (address => bool) public winners;
+    mapping (address => uint256) public winnersRewards;
     address[] public winnersList;
     mapping (address => Option) public pickedOptions;
     mapping (address => uint256) public contributions;
     address private owner;
     uint256 public totalContributions;
     bool public resolved;
+    uint256 public minimumEntrance = 10000000000000000;
 
     bytes32 internal keyHash;
     uint256 internal fee;
@@ -50,8 +58,13 @@ contract Lottery is VRFConsumerBase {
         _;
     }
 
+    modifier isResolved() {
+        require(resolved == true, "This contract is not resolved yet!");
+        _;
+    }
+
     modifier minimumEther() {
-        require(msg.value > 10000000000000000, "You have to enter minimum 0.01 Ether"); // 0.01 Ether
+        require(msg.value > minimumEntrance, "You have to enter minimum 0.01 Ether"); // 0.01 Ether
         _;
     }
 
@@ -61,6 +74,10 @@ contract Lottery is VRFConsumerBase {
     function getLatestPrice() public view returns (int) {
         (,int price,,,) = priceFeed.latestRoundData();
         return price;
+    }
+
+    function isAddressParticipating(address _address) public view returns (bool) {
+        return wallets[_address];
     }
 
     function getStringRepresentation(Option _option) public pure returns (string memory) {
@@ -75,19 +92,27 @@ contract Lottery is VRFConsumerBase {
         }
     }
 
+    function getOptions() public pure returns (Option[4] memory) {
+        return [Option.One, Option.Two, Option.Three, Option.Four];
+    }
+
     function getContributionForAddress(address _address) public view returns (uint256) {
         return contributions[_address];
+    }
+
+    function getRewardForAddress(address _address) public view returns (uint256) {
+        return winnersRewards[_address];
     }
 
     function getPickedOptionForAddress(address _address) public view returns (string memory) {
         return getStringRepresentation(pickedOptions[_address]);
     }
 
-    function didAddressWin(address _address) public view returns (bool) {
+    function didAddressWin(address _address) public view isResolved returns (bool) {
         return winners[_address];
     }
 
-    function enter(Option _option) public payable minimumEther {
+    function enter(Option _option) public payable minimumEther notResolved {
         if (wallets[msg.sender] == false) {
             addresses.push(msg.sender);
         }
@@ -95,10 +120,6 @@ contract Lottery is VRFConsumerBase {
         pickedOptions[msg.sender] = _option;
         contributions[msg.sender] += msg.value;
         totalContributions += msg.value;
-    }
-
-    function getWinningOption() public pure returns (Option) {
-        return Option.One;
     }
 
     function resolve() public payable onlyOwner notResolved {
@@ -122,10 +143,10 @@ contract Lottery is VRFConsumerBase {
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
         winOption = Option(randomness % 4);
-        giveOutMoney();
+       // giveOutMoney();
     }
 
-    function giveOutMoney() private {
+    function giveOutMoney() private notResolved {
         for (uint256 i = 0; i < addresses.length; i++) {
             address adr = addresses[i];
             if (pickedOptions[adr] == winOption) {
@@ -137,6 +158,7 @@ contract Lottery is VRFConsumerBase {
             uint256 reward = totalContributions / winnersList.length;
             for (uint256 i = 0; i < winnersList.length; i++) {
                 payable(winnersList[i]).transfer(reward);
+                winnersRewards[winnersList[i]] = reward;
             }
         } else {
             for (uint256 i = 0; i < addresses.length; i++) {
@@ -146,7 +168,7 @@ contract Lottery is VRFConsumerBase {
         resolved = true;
     }
 
-    function withdrawBalance() external onlyOwner {
+    function withdrawBalance() external onlyOwner isResolved {
         uint balance = LINK.balanceOf(address(this));
         LINK.transfer(owner, balance);
     }
