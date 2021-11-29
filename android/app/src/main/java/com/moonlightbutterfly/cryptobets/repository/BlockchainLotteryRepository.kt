@@ -3,7 +3,7 @@ package com.moonlightbutterfly.cryptobets.repository
 import com.moonlightbutterfly.cryptobets.models.Lottery
 import com.moonlightbutterfly.cryptobets.models.LotteryPlayerInfo
 
-object BlockchainLotteryRepository: LotteryRepository {
+class BlockchainLotteryRepository: LotteryRepository {
 
     override fun getAllLotteries(): List<Lottery> {
         TODO("Not yet implemented")

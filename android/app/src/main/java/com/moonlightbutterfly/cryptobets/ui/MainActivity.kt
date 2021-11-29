@@ -9,13 +9,14 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.moonlightbutterfly.cryptobets.models.Credentials
 import com.moonlightbutterfly.cryptobets.repository.BlockchainLotteryRepository
 import com.moonlightbutterfly.cryptobets.ui.theme.CryptoBetsTheme
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels {
-        MainViewModelProvider(BlockchainLotteryRepository())
+        MainViewModelProvider(Credentials("", ""), BlockchainLotteryRepository())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
