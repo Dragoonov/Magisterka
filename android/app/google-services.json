@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "959513549479",
+    "project_id": "cryptobets-a71b4",
+    "storage_bucket": "cryptobets-a71b4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:959513549479:android:084f1107c2f6bb18d35982",
+        "android_client_info": {
+          "package_name": "com.moonlightbutterfly.cryptobets"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "959513549479-asa2td07lah9ud8uhg5oegdo6r23o2te.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOqN65AFgR1Cg0P2HpDVFHF3hqUjysrh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "959513549479-asa2td07lah9ud8uhg5oegdo6r23o2te.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,36 +5,43 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.moonlightbutterfly.cryptobets.models.Credentials
-import com.moonlightbutterfly.cryptobets.models.Lottery
-import com.moonlightbutterfly.cryptobets.models.LotteryPlayerInfo
-import com.moonlightbutterfly.cryptobets.repository.LotteryRepository
+import com.moonlightbutterfly.cryptobets.models.Bet
+import com.moonlightbutterfly.cryptobets.models.BetPlayerInfo
+import com.moonlightbutterfly.cryptobets.models.Option
+import com.moonlightbutterfly.cryptobets.repository.BetsRepository
 
 class MainViewModel(
-    private val credentials: Credentials,
-    private val lotteryRepository: LotteryRepository
-    ): ViewModel() {
+    private val betsRepository: BetsRepository
+) : ViewModel() {
 
-    private val _allBets: MutableLiveData<List<Lottery>> = MutableLiveData()
-    private val _allPlayerInfoBets: MutableLiveData<List<LotteryPlayerInfo>> = _allBets.map { list ->
-        list.map { lotteryRepository.getLotteryPlayerInfo(credentials.publicKey, it.identifier) }
-    } as MutableLiveData<List<LotteryPlayerInfo>>
+    private val _allBets: LiveData<List<Bet>> = betsRepository.getAllBets()
 
+    val allBets: LiveData<List<Bet>> = _allBets
 
-    val allBets: LiveData<List<Lottery>> = _allBets
-
-    val notEnteredBets = _allPlayerInfoBets.map { list ->
-        list.filter { it.isParticipating }.map { it.lottery }
+    val enteredBets = _allBets.map { list ->
+        list
+            .map { betsRepository.getBetPlayerInfo(Credentials.publicKey, it.identifier) }
+            .filter {
+                it.isParticipating && !it.bet.isResolved
+            }
     }
 
-    val enteredBets = _allPlayerInfoBets.map { list ->
-        list.filter { it.isParticipating }
+    val resolvedBets = _allBets.map { list ->
+        list
+            .map { betsRepository.getBetPlayerInfo(Credentials.publicKey, it.identifier) }
+            .filter {
+                it.isParticipating && it.bet.isResolved
+            }
     }
 
-    val resolvedBets = _allPlayerInfoBets.map { list ->
-        list.filter { it.isParticipating && it.lottery.isResolved }
+    fun bet(bet: Bet, amount: Double, option: Option) {
+        betsRepository.bet(Credentials.publicKey, bet.identifier, amount, option)
     }
 
-    fun betLottery(lottery: Lottery, amount: Double) {
-        lotteryRepository.betLottery(credentials.publicKey, lottery.identifier, amount)
+    fun onCredentialsApproved(publicKey: String, privateKey: String) {
+        Credentials.privateKey = privateKey
+        Credentials.publicKey = publicKey
     }
+
+    fun getBet(contract: String) = betsRepository.getBet(contract)
 }

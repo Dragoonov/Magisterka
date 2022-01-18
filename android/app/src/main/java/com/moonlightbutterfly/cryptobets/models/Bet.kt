@@ -1,6 +1,6 @@
 package com.moonlightbutterfly.cryptobets.models
 
-data class Lottery(
+data class Bet(
     val title: String,
     val options: List<Option>,
     val minimumEntrance: Double,
