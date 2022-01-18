@@ -23,6 +23,7 @@ contract Lottery is VRFConsumerBase {
     uint256 public totalContributions;
     bool public resolved;
     uint256 public minimumEntrance = 10000000000000000;
+    string public name = "Test";
 
     bytes32 internal keyHash;
     uint256 internal fee;
