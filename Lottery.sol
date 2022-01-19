@@ -17,7 +17,7 @@ contract Lottery is VRFConsumerBase {
     mapping (address => bool) public winners;
     mapping (address => uint256) public winnersRewards;
     address[] public winnersList;
-    mapping (address => Option) public pickedOptions;
+    mapping (address => uint256) public pickedOptions;
     mapping (address => uint256) public contributions;
     address private owner;
     uint256 public totalContributions;
@@ -27,15 +27,15 @@ contract Lottery is VRFConsumerBase {
 
     bytes32 internal keyHash;
     uint256 internal fee;
-    Option public winOption;
+    uint256 public winOption;
+    uint256 allOptionsNumber = 4;
+
 
 
     address aggregatorV3InterfaceRinkeby = 0x8A753747A1Fa494EC906cE90E9f37563A8AF630e;
     address VRFCoordinatorRinkeby = 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B;
     address linkTokenRinkeby = 0x01BE23585060835E02B77ef475b0Cc51aA1e0709;
     bytes32 keyHashRinkeby = 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311;
-
-    enum Option { One, Two, Three, Four }
 
     constructor() 
     VRFConsumerBase(
@@ -81,20 +81,20 @@ contract Lottery is VRFConsumerBase {
         return wallets[_address];
     }
 
-    function getStringRepresentation(Option _option) public pure returns (string memory) {
-        if (_option == Option.One) {
+    function getStringRepresentation(uint256 _option) public pure returns (string memory) {
+        if (_option == 1) {
             return "One";
-        } else if (_option == Option.Two) {
+        } else if (_option == 2) {
             return "Two";
-        } else if (_option == Option.Three) {
+        } else if (_option == 3) {
             return "Three";
         } else {
             return "Four";
         }
     }
 
-    function getOptions() public pure returns (Option[4] memory) {
-        return [Option.One, Option.Two, Option.Three, Option.Four];
+    function getOptionsAmount() public view returns (uint256) {
+        return allOptionsNumber;
     }
 
     function getContributionForAddress(address _address) public view returns (uint256) {
@@ -113,7 +113,7 @@ contract Lottery is VRFConsumerBase {
         return winners[_address];
     }
 
-    function enter(Option _option) public payable minimumEther notResolved {
+    function enter(uint256 _option) public payable minimumEther notResolved {
         if (wallets[msg.sender] == false) {
             addresses.push(msg.sender);
         }
@@ -143,7 +143,7 @@ contract Lottery is VRFConsumerBase {
      * Callback function used by VRF Coordinator
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        winOption = Option(randomness % 4);
+        winOption = randomness % 4;
        // giveOutMoney();
     }
 
