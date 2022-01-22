@@ -15,7 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.ktx.app
+import com.moonlightbutterfly.cryptobets.repository.BlockchainFacade
 import com.moonlightbutterfly.cryptobets.repository.BlockchainBetsRepository
 import com.moonlightbutterfly.cryptobets.ui.composables.Bets
 import com.moonlightbutterfly.cryptobets.ui.composables.LocalViewModelFactory
@@ -31,7 +31,10 @@ class MainActivity : ComponentActivity() {
 
     private val db = Firebase.firestore
 
-    private val mainViewModelProvider = MainViewModelProvider(BlockchainBetsRepository(db))
+    private val mainViewModelProvider = MainViewModelProvider(
+        BlockchainBetsRepository(db),
+        BlockchainFacade()
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
