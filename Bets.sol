@@ -25,7 +25,6 @@ contract Bets is VRFConsumerBase {
     struct Bet {
         string name;
         string[] options;
-        uint256 optionsNumber;
         mapping (address => uint256) contributions;
         mapping (address => string) pickedOptions;
         address[] contributors;
@@ -59,13 +58,12 @@ contract Bets is VRFConsumerBase {
         fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
     }
 
-    function addBet(string memory name, string[] memory options, uint256 optionsAmount) public onlyOwner {
+    function addBet(string memory name, string[] memory options) public onlyOwner {
         uint256 idx = bets.length;
         bets.push();
         Bet storage bet = bets[idx];
         bet.name = name;
         bet.options = options;
-        bet.optionsNumber = optionsAmount;
         bet.resolved = false;
         bet.reward = 0;
         betNames.push(name);
@@ -73,6 +71,24 @@ contract Bets is VRFConsumerBase {
 
     function getBets() public view returns (string[] memory) {
         return betNames;
+    }
+
+    function getWinOption(string memory betName) public view returns (string memory) {
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
+                return bets[i].winOption;
+            }
+        }
+        return "";
+    }
+
+    function isResolved(string memory betName) public view returns (bool) {
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
+                return bets[i].resolved;
+            }
+        }
+        return false;
     }
 
     function getBetOptions(string memory betName) public view returns (string[] memory) {
@@ -91,15 +107,6 @@ contract Bets is VRFConsumerBase {
             }
         }
         return false;
-    }
-
-    function getOptionsAmount(string memory betName) public view returns (uint256) {
-        for (uint256 i = 0; i < bets.length; i++) {
-            if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
-               return bets[i].optionsNumber;
-            }
-        }
-        return 0;
     }
 
     function getContributionForAddress(address _address, string memory betName) public view returns (uint256) {
@@ -175,12 +182,12 @@ contract Bets is VRFConsumerBase {
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betToResolve))) {
-                uint256 winOptionIndex = randomness % bets[i].optionsNumber;
+                uint256 winOptionIndex = randomness % bets[i].options.length;
                 bets[i].winOption = bets[i].options[winOptionIndex];
                 bets[i].resolved = true;
             }
         }
-       // giveOutMoney();
+        giveOutMoney();
     }
 
     function giveOutMoney() private {
