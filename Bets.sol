@@ -41,11 +41,6 @@ contract Bets is VRFConsumerBase {
         _;
     }
 
-    modifier minimumEther() {
-        require(msg.value > minimumEntrance, "You have to enter minimum 0.001 Ether");
-        _;
-    }
-
     constructor() 
     VRFConsumerBase(
             VRFCoordinatorRinkeby, // VRF Coordinator
@@ -148,7 +143,8 @@ contract Bets is VRFConsumerBase {
         return false;
     }
 
-    function enter(string memory _option, string memory betName) public payable minimumEther {
+    function enter(string memory _option, string memory betName) public payable {
+        require(msg.value > minimumEntrance, "You have to enter minimum 0.001 Ether");
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
                 bets[i].contributors.push(msg.sender);
@@ -159,7 +155,7 @@ contract Bets is VRFConsumerBase {
         }
     }
 
-    function resolve(string memory betName) public payable onlyOwner {
+    function resolve(string memory betName) public onlyOwner {
         betToResolve = betName;
         getRandomNumber();
     }
