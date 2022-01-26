@@ -9,7 +9,7 @@ contract Bets is VRFConsumerBase {
     AggregatorV3Interface internal priceFeed;
 
     address private owner;
-    uint256 public minimumEntrance = 10000000000000000;
+    uint256 public minimumEntrance = 1000000000000000; // 0.001 Ether
 
     bytes32 internal keyHash;
     uint256 internal fee;
@@ -42,7 +42,7 @@ contract Bets is VRFConsumerBase {
     }
 
     modifier minimumEther() {
-        require(msg.value > minimumEntrance, "You have to enter minimum 0.01 Ether"); // 0.01 Ether
+        require(msg.value > minimumEntrance, "You have to enter minimum 0.001 Ether");
         _;
     }
 
