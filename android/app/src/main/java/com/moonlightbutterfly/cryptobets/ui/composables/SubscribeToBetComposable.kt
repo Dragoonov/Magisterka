@@ -29,13 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moonlightbutterfly.cryptobets.models.Bet
-import com.moonlightbutterfly.cryptobets.models.Option
 import com.moonlightbutterfly.cryptobets.ui.MainViewModel
 
 @Composable
 fun SubscribeToBet(
-    smartContractAddress: String,
-    onApproved: (bet: Bet, amount: Double, option: Option) -> Unit) {
+    betTitle: String,
+    onApproved: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -44,7 +43,7 @@ fun SubscribeToBet(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val viewModel = viewModel<MainViewModel>(factory = LocalViewModelFactory.current)
-        val bet = viewModel.getBet(smartContractAddress)
+        val bet = viewModel.getBet(betTitle)
         var amount by rememberSaveable { mutableStateOf(.0) }
         val (selectedOption, onOptionSelected) = remember {
             mutableStateOf(bet.options[0])
@@ -54,10 +53,6 @@ fun SubscribeToBet(
             text = bet.title,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
-        )
-        Text(
-            modifier = Modifier.padding(bottom = 10.dp),
-            text = bet.identifier,
         )
         Text(
             modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
@@ -75,7 +70,7 @@ fun SubscribeToBet(
                 val annotatedString = buildAnnotatedString {
                     withStyle(
                         style = SpanStyle(fontWeight = FontWeight.Bold)
-                    ){ append("  ${it.name}  ") }
+                    ){ append("  $it  ") }
                 }
                 ClickableText(
                     text = annotatedString,
@@ -94,7 +89,10 @@ fun SubscribeToBet(
         )
 
         Button(
-            onClick = { onApproved(bet, amount, selectedOption) }
+            onClick = {
+                viewModel.bet(bet, amount, selectedOption)
+                onApproved()
+            }
         ) {
             Text(text = "OK")
         }

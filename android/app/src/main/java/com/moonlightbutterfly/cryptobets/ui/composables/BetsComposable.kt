@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moonlightbutterfly.cryptobets.models.Bet
-import com.moonlightbutterfly.cryptobets.models.Option
 import com.moonlightbutterfly.cryptobets.ui.MainViewModel
 
 @Composable
@@ -43,7 +42,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
     val (selectedOption, onOptionSelected) = remember {
         mutableStateOf(0)
     }
-    val allBets by viewModel.allBets.observeAsState()
+    val allBets by viewModel.allBets.observeAsState(listOf())
     val userBets by viewModel.enteredBets.observeAsState()
     val endedBets by viewModel.resolvedBets.observeAsState()
 
@@ -84,7 +83,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
         LazyColumn {
             when (selectedOption) {
                 0 -> {
-                    items(allBets!!) {
+                    items(allBets) {
                         Bet(
                             bet = it,
                             onBetClicked = onBetClicked,
@@ -150,7 +149,7 @@ fun Bet(
     howMuchPaid: Double? = null,
     howMuchWon: Double? = null,
     showBet: Boolean = false,
-    pickedOption: Option? = null
+    pickedOption: String? = null
 ) {
     Card(
         Modifier
@@ -169,15 +168,11 @@ fun Bet(
                 fontWeight = FontWeight.Bold
             )
             bet.options.forEach {
-                Text(text = "${it.value}. ${it.name}", modifier = Modifier.padding(start = 25.dp))
+                Text(text = it, modifier = Modifier.padding(start = 25.dp))
             }
             Spacer(modifier = Modifier.padding(20.dp))
             Text(
-                text = "Smart contract: ${bet.identifier}",
-                modifier = Modifier.padding(start = 25.dp)
-            )
-            Text(
-                text = "Picked option: ${pickedOption?.value}",
+                text = "Picked option: $pickedOption",
                 modifier = Modifier
                     .alpha((if (pickedOption != null) 1f else 0f))
                     .padding(start = 25.dp)
@@ -203,7 +198,7 @@ fun Bet(
                         .weight(1f)
                 )
                 Button(
-                    onClick = { onBetClicked(bet.identifier) },
+                    onClick = { onBetClicked(bet.title) },
                     modifier = Modifier
                         .padding(end = 10.dp)
                         .alpha(if (showBet) 1f else 0f)

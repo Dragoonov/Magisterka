@@ -3,10 +3,6 @@ package com.moonlightbutterfly.cryptobets.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.moonlightbutterfly.cryptobets.models.Bet
-import com.moonlightbutterfly.cryptobets.models.BetPlayerInfo
-import com.moonlightbutterfly.cryptobets.models.Option
 
 class BlockchainBetsRepository(private val contractsSource: FirebaseFirestore) {
 

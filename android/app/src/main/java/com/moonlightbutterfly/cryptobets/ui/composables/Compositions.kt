@@ -1,6 +1,6 @@
 package com.moonlightbutterfly.cryptobets.ui.composables
 
 import androidx.compose.runtime.compositionLocalOf
-import com.moonlightbutterfly.cryptobets.ui.MainViewModelProvider
+import com.moonlightbutterfly.cryptobets.ui.ViewModelProvider
 
-val LocalViewModelFactory = compositionLocalOf<MainViewModelProvider> { error("No view model factory found!") }
+val LocalViewModelFactory = compositionLocalOf<ViewModelProvider> { error("No view model factory found!") }

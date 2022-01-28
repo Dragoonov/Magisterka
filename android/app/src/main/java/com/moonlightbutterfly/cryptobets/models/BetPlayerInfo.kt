@@ -6,5 +6,5 @@ data class BetPlayerInfo(
     val contribution: Double,
     val reward: Double,
     val didPlayerWin: Boolean,
-    val pickedOption: Option
+    val pickedOption: String
 )

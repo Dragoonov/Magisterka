@@ -18,9 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.moonlightbutterfly.cryptobets.LoginViewModel
 
 @Composable
-fun Login(onOkClicked: (publicKey: String, privateKey: String) -> Unit) {
+fun Login(onOkClicked: () -> Unit) {
+    val loginViewModel = viewModel<LoginViewModel>(factory = LocalViewModelFactory.current)
     Column(
         Modifier
             .fillMaxWidth()
@@ -28,22 +31,12 @@ fun Login(onOkClicked: (publicKey: String, privateKey: String) -> Unit) {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var publicKey by rememberSaveable { mutableStateOf("") }
-        
         Text(
             text = "CryptoBets",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Default,
             color = MaterialTheme.colors.primary
-        )
-        
-        OutlinedTextField(
-            value = publicKey,
-            onValueChange = {
-                publicKey = it
-            },
-            label = { Text("Public key") },
         )
         var privateKey by rememberSaveable { mutableStateOf("") }
         OutlinedTextField(
@@ -54,7 +47,10 @@ fun Login(onOkClicked: (publicKey: String, privateKey: String) -> Unit) {
             label = { Text("Private key") },
         )
         Button(
-            onClick = { onOkClicked(publicKey, privateKey) }
+            onClick = {
+                loginViewModel.onCredentialsApproved(privateKey)
+                onOkClicked()
+            }
         ) {
             Text(text = "OK")
         }

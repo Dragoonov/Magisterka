@@ -1,19 +1,20 @@
 package com.moonlightbutterfly.cryptobets.ui
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.moonlightbutterfly.cryptobets.repository.BlockchainFacade
 import com.moonlightbutterfly.cryptobets.models.Bet
-import com.moonlightbutterfly.cryptobets.models.Option
-import com.moonlightbutterfly.cryptobets.repository.BlockchainBetsRepository
+import com.moonlightbutterfly.cryptobets.models.BetPlayerInfo
+import okhttp3.internal.notify
 
 class MainViewModel(
-    betsRepository: BlockchainBetsRepository,
     private val blockchainFacade: BlockchainFacade
 ) : ViewModel() {
 
-    private val _allBets: LiveData<List<Bet>> = betsRepository.getAllBetsIdentifiers().map { list ->
+    private val _allBets = MutableLiveData(blockchainFacade.getBetsIdentifiers())
+    .map { list ->
         list.map { blockchainFacade.getBet(it) }
     }
 
@@ -21,7 +22,7 @@ class MainViewModel(
 
     val enteredBets = _allBets.map { list ->
         list
-            .map { blockchainFacade.getBetPlayerInfo(it, it.identifier) }
+            .map { blockchainFacade.getBetPlayerInfo(it) }
             .filter {
                 it.isParticipating && !it.bet.isResolved
             }
@@ -29,20 +30,15 @@ class MainViewModel(
 
     val resolvedBets = _allBets.map { list ->
         list
-            .map { blockchainFacade.getBetPlayerInfo(it, it.identifier) }
+            .map { blockchainFacade.getBetPlayerInfo(it) }
             .filter {
                 it.isParticipating && it.bet.isResolved
             }
     }
 
-    fun bet(bet: Bet, amount: Double, option: Option) {
-        blockchainFacade.bet(bet.identifier, option, amount)
+    fun bet(bet: Bet, amount: Double, option: String) {
+        blockchainFacade.bet(bet.title, option, amount)
     }
 
-    fun onCredentialsApproved(publicKey: String, privateKey: String) {
-        blockchainFacade.initialize(privateKey, publicKey, allBets.value!!.map { it.identifier })
-
-    }
-
-    fun getBet(contract: String) = allBets.value!!.first { it.identifier == contract }
+    fun getBet(betTitle: String) = allBets.value!!.first { it.title == betTitle }
 }

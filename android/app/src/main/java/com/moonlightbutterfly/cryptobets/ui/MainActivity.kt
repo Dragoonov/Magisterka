@@ -13,10 +13,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.moonlightbutterfly.cryptobets.LoginViewModel
 import com.moonlightbutterfly.cryptobets.repository.BlockchainFacade
-import com.moonlightbutterfly.cryptobets.repository.BlockchainBetsRepository
 import com.moonlightbutterfly.cryptobets.ui.composables.Bets
 import com.moonlightbutterfly.cryptobets.ui.composables.LocalViewModelFactory
 import com.moonlightbutterfly.cryptobets.ui.composables.Login
@@ -29,10 +27,7 @@ class MainActivity : ComponentActivity() {
 
     private var timeOfLastClick: Long = 0
 
-    private val db = Firebase.firestore
-
-    private val mainViewModelProvider = MainViewModelProvider(
-        BlockchainBetsRepository(db),
+    private val mainViewModelProvider = ViewModelProvider(
         BlockchainFacade()
     )
 
@@ -40,7 +35,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CompositionLocalProvider(LocalViewModelFactory provides mainViewModelProvider) {
-                val viewModel = viewModel<MainViewModel>(factory = LocalViewModelFactory.current)
                 CryptoBetsTheme {
                     navController = rememberNavController()
                     Scaffold { padding ->
@@ -49,8 +43,7 @@ class MainActivity : ComponentActivity() {
                             startDestination = Routes.LOGIN,
                             Modifier.padding(padding)) {
                             composable(Routes.LOGIN) {
-                                Login { publicKey, privateKey ->
-                                    viewModel.onCredentialsApproved(publicKey, privateKey)
+                                Login {
                                     navController.navigate(Routes.BETS)
                                 }
                             }
@@ -59,9 +52,8 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("${Routes.SUBSCRIBE_TO_BET}/$it")
                                 }
                             }
-                            composable("${Routes.SUBSCRIBE_TO_BET}/{address}") {
-                                SubscribeToBet(it.arguments?.getString("address")!!) { bet, amount, option ->
-                                    viewModel.bet(bet, amount, option)
+                            composable("${Routes.SUBSCRIBE_TO_BET}/{title}") {
+                                SubscribeToBet(it.arguments?.getString("title")!!) {
                                     navController.popBackStack()
                                 }
                             }
