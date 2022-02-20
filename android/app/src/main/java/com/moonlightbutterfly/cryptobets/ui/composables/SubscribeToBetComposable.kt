@@ -1,5 +1,6 @@
 package com.moonlightbutterfly.cryptobets.ui.composables
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,12 +15,14 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -28,13 +31,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.moonlightbutterfly.cryptobets.SubscribeViewModel
 import com.moonlightbutterfly.cryptobets.models.Bet
 import com.moonlightbutterfly.cryptobets.ui.MainViewModel
 
 @Composable
 fun SubscribeToBet(
     betTitle: String,
-    onApproved: () -> Unit) {
+    onApproved: () -> Unit
+) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -42,17 +47,23 @@ fun SubscribeToBet(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val viewModel = viewModel<MainViewModel>(factory = LocalViewModelFactory.current)
-        val bet = viewModel.getBet(betTitle)
-        var amount by rememberSaveable { mutableStateOf(.0) }
+        val viewModel = viewModel<SubscribeViewModel>(factory = LocalViewModelFactory.current)
+        val bet by viewModel.getBet(betTitle).observeAsState(Bet("", emptyList(), 0.0, false))
+
+        var amount by rememberSaveable { mutableStateOf(bet.minimumEntrance) }
         val (selectedOption, onOptionSelected) = remember {
-            mutableStateOf(bet.options[0])
+            mutableStateOf("")
         }
+        val context = LocalContext.current
         Text(
             modifier = Modifier.padding(top = 40.dp, bottom = 5.dp),
             text = bet.title,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
+        )
+        Text(
+            modifier = Modifier.padding(bottom = 20.dp),
+            text = "Minimum entrance: ${bet.minimumEntrance} ETH"
         )
         Text(
             modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
@@ -70,7 +81,7 @@ fun SubscribeToBet(
                 val annotatedString = buildAnnotatedString {
                     withStyle(
                         style = SpanStyle(fontWeight = FontWeight.Bold)
-                    ){ append("  $it  ") }
+                    ) { append("  $it  ") }
                 }
                 ClickableText(
                     text = annotatedString,
@@ -81,17 +92,31 @@ fun SubscribeToBet(
             }
         }
         OutlinedTextField(
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            value = amount.toString(),
-            onValueChange = {amount = it.toDouble()},
+            value = "$amount ETH",
+            onValueChange = {
+                val number = it.removeSuffix(" ETH").toDoubleOrNull()
+                amount = number ?: amount
+            },
             label = { Text("Amount") },
-            modifier = Modifier.padding(bottom = 30.dp)
+            modifier = Modifier.padding(bottom = 30.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         Button(
             onClick = {
-                viewModel.bet(bet, amount, selectedOption)
-                onApproved()
+                when {
+                    amount < bet.minimumEntrance -> {
+                        Toast.makeText(context, "Your bet is too low", Toast.LENGTH_SHORT).show()
+                    }
+                    selectedOption.isEmpty() -> {
+                        Toast.makeText(context, "Select an option", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        viewModel.bet(bet, amount, selectedOption) {
+                            onApproved()
+                        }
+                    }
+                }
             }
         ) {
             Text(text = "OK")

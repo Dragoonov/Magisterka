@@ -42,7 +42,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
     val (selectedOption, onOptionSelected) = remember {
         mutableStateOf(0)
     }
-    val allBets by viewModel.allBets.observeAsState(listOf())
+    val allBets by viewModel.allBets.observeAsState()
     val userBets by viewModel.enteredBets.observeAsState()
     val endedBets by viewModel.resolvedBets.observeAsState()
 
@@ -83,7 +83,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
         LazyColumn {
             when (selectedOption) {
                 0 -> {
-                    items(allBets) {
+                    items(allBets ?: emptyList()) {
                         Bet(
                             bet = it,
                             onBetClicked = onBetClicked,
@@ -92,7 +92,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
                     }
                 }
                 1 -> {
-                    items(userBets!!) {
+                    items(userBets ?: emptyList()) {
                         Bet(
                             bet = it.bet,
                             onBetClicked = onBetClicked,
@@ -102,7 +102,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
                     }
                 }
                 2 -> {
-                    items(endedBets!!) {
+                    items(endedBets ?: emptyList()) {
                         Bet(
                             bet = it.bet,
                             onBetClicked = onBetClicked,
@@ -191,7 +191,7 @@ fun Bet(
                         .weight(1f)
                 )
                 Text(
-                    text = if (howMuchWon != null) "Won $howMuchWon ETH" else "Lost",
+                    text = if (howMuchWon != null && howMuchWon > 0) "Won $howMuchWon ETH" else "Lost",
                     color = if (howMuchWon != null && howMuchWon > 0) Color.Green else Color.Red,
                     modifier = Modifier
                         .alpha(if (howMuchWon != null) 1f else 0f)

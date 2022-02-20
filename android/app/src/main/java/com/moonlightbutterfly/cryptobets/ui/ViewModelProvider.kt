@@ -3,6 +3,7 @@ package com.moonlightbutterfly.cryptobets.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.moonlightbutterfly.cryptobets.LoginViewModel
+import com.moonlightbutterfly.cryptobets.SubscribeViewModel
 import com.moonlightbutterfly.cryptobets.repository.BlockchainFacade
 
 class ViewModelProvider(
@@ -20,6 +21,11 @@ class ViewModelProvider(
                 }
                 it.isAssignableFrom(LoginViewModel::class.java) -> {
                     LoginViewModel(
+                        blockchainFacade
+                    ) as T
+                }
+                it.isAssignableFrom(SubscribeViewModel::class.java) -> {
+                    SubscribeViewModel(
                         blockchainFacade
                     ) as T
                 }

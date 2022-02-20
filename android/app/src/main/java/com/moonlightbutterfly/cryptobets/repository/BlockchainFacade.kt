@@ -6,9 +6,13 @@ import com.moonlightbutterfly.cryptobets.models.Bet
 import com.moonlightbutterfly.cryptobets.models.BetPlayerInfo
 import org.web3j.crypto.Credentials
 import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.gas.DefaultGasProvider
-import java.math.BigInteger
+import org.web3j.utils.Convert
+import java.math.BigDecimal
+import java.util.concurrent.CompletableFuture
+
 
 class BlockchainFacade {
     private val web3 = Web3j.build(HttpService(BuildConfig.INFURA_KEY))
@@ -19,16 +23,27 @@ class BlockchainFacade {
         credentials = Credentials.create(privateKey)
         contract = Bets.load(
             "0x81cAcAD0044EC9A7585725d3e1642929904dB42c", //Dodać nowy
-                web3,
-                credentials,
-                DefaultGasProvider()
-            )
+            web3,
+            credentials,
+            DefaultGasProvider()
+        )
     }
 
-    fun bet(betName: String, option: String, howMuch: Double) {
-        contract
-            .enter(option, betName, howMuch.etherToWei())
-            .send()
+    fun bet(betName: String, option: String, howMuch: Double): CompletableFuture<TransactionReceipt> {
+//        val ethGetTransactionCount: EthGetTransactionCount = web3.ethGetTransactionCount(
+//            credentials.address, DefaultBlockParameterName.LATEST
+//        ).sendAsync().get()
+//        val nonce = ethGetTransactionCount.transactionCount
+//        val gasPrice = DefaultGasProvider.GAS_PRICE
+//        val gasLimit = DefaultGasProvider.GAS_LIMIT
+//        val to = contract.contractAddress
+//        val value = howMuch
+//        val data =
+//        RawTransaction.createTransaction(nonce, gasPrice, gasLimit, to, "")
+//        web3.ethSendRawTransaction()
+        return contract
+            .enter(option, betName, Convert.toWei(BigDecimal(howMuch), Convert.Unit.ETHER).toBigInteger())
+            .sendAsync()
     }
 
     fun getBetPlayerInfo(
@@ -36,12 +51,14 @@ class BlockchainFacade {
     ): BetPlayerInfo {
         return BetPlayerInfo(
             bet,
-            isParticipating = contract.isAddressParticipating(credentials.address, bet.title).send(),
-            contribution = contract
+            isParticipating = contract.isAddressParticipating(credentials.address, bet.title)
+                .send(),
+            contribution = Convert.fromWei(BigDecimal(contract
                 .getContributionForAddress(credentials.address, bet.title)
-                .send()
-                .weiToEther(),
-            reward = contract.getRewardForAddress(credentials.address, bet.title).send().weiToEther(),
+                .send()), Convert.Unit.ETHER).toDouble(),
+            reward = Convert.fromWei(BigDecimal(contract
+                .getRewardForAddress(credentials.address, bet.title)
+                .send()), Convert.Unit.ETHER).toDouble(),
             didPlayerWin = contract.didAddressWin(credentials.address, bet.title).send(),
             pickedOption = contract.getPickedOptionForAddress(credentials.address, bet.title).send()
         )
@@ -58,16 +75,9 @@ class BlockchainFacade {
         return Bet(
             title = betTitle,
             options = betOptions,
-            minimumEntrance = minimumEntrance.weiToEther(),
+            minimumEntrance = Convert.fromWei(BigDecimal(minimumEntrance), Convert.Unit.ETHER).toDouble(),
             isResolved = isResolved
         )
-    }
-
-    private fun BigInteger.weiToEther() = this.divide(BigInteger(WEI)).toDouble()
-    private fun Double.etherToWei() = BigInteger(this.toString()).times(BigInteger(WEI))
-
-    private companion object {
-        const val WEI = "1000000000000000000"
     }
 
 }

@@ -1,5 +1,6 @@
 package com.moonlightbutterfly.cryptobets.ui.composables
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -24,6 +26,7 @@ import com.moonlightbutterfly.cryptobets.LoginViewModel
 @Composable
 fun Login(onOkClicked: () -> Unit) {
     val loginViewModel = viewModel<LoginViewModel>(factory = LocalViewModelFactory.current)
+    val context = LocalContext.current
     Column(
         Modifier
             .fillMaxWidth()
@@ -48,8 +51,12 @@ fun Login(onOkClicked: () -> Unit) {
         )
         Button(
             onClick = {
-                loginViewModel.onCredentialsApproved(privateKey)
-                onOkClicked()
+                val approved = loginViewModel.onCredentialsApproved(privateKey)
+                if (approved) {
+                    onOkClicked()
+                } else {
+                    Toast.makeText(context, "Given key is invalid!", Toast.LENGTH_SHORT).show()
+                }
             }
         ) {
             Text(text = "OK")
