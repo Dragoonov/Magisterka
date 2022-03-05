@@ -117,7 +117,7 @@ contract Bets is VRFConsumerBase {
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
                if (didAddressWin(_address, bets[i].name)) {
-                   return bets[i].reward;
+                   return bets[i].reward + getContributionForAddress(_address, betName);
                }
             }
         }
@@ -144,7 +144,7 @@ contract Bets is VRFConsumerBase {
     }
 
     function enter(string memory _option, string memory betName) public payable {
-        require(msg.value > minimumEntrance, "You have to enter minimum 0.001 Ether");
+        require(msg.value >= minimumEntrance, "You have to enter minimum 0.001 Ether");
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
                 bets[i].contributors.push(msg.sender);
@@ -187,21 +187,22 @@ contract Bets is VRFConsumerBase {
     }
 
     function giveOutMoney() private {
+        uint256 contributedAmount = 0;
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betToResolve))) {
                 for (uint256 j = 0; j < bets[i].contributors.length; j++) {
                     address adr = bets[i].contributors[j];
                     if (didAddressWin(adr, bets[i].name)) {
                         winnersList.push(adr);
+                        contributedAmount += getContributionForAddress(adr, betToResolve);
                     }
                 }
                 if (winnersList.length > 0) {
-                    uint256 reward = bets[i].totalRewardPool / winnersList.length;
+                    uint256 reward = (bets[i].totalRewardPool - contributedAmount) / winnersList.length;
+                    bets[i].reward = reward;
                     for (uint256 j = 0; j < winnersList.length; j++) {
                         payable(winnersList[j]).transfer(reward);
                     }
-                } else {
-                    // For now, not won money stays within contract forever
                 }
                 bets[i].totalRewardPool = 0;
                 delete winnersList;
