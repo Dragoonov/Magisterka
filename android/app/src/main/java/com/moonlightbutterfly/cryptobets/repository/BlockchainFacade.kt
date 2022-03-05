@@ -33,7 +33,7 @@ class BlockchainFacade {
     fun initialize(privateKey: String) {
         credentials = Credentials.create(privateKey)
         contract = Bets.load(
-            "0x81cAcAD0044EC9A7585725d3e1642929904dB42c", //Dodać nowy
+            "0x71cAf37e503CFCb82dB0AF7cF844005adcE853dE",
             web3,
             credentials,
             DefaultGasProvider()
@@ -77,7 +77,8 @@ class BlockchainFacade {
                 .getRewardForAddress(credentials.address, bet.title)
                 .send()), Convert.Unit.ETHER).toDouble(),
             didPlayerWin = contract.didAddressWin(credentials.address, bet.title).send(),
-            pickedOption = contract.getPickedOptionForAddress(credentials.address, bet.title).send()
+            pickedOption = contract.getPickedOptionForAddress(credentials.address, bet.title).send(),
+            winOption = contract.getWinOption(bet.title).send()
         )
     }
 

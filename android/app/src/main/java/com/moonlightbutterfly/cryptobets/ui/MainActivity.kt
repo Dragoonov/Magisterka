@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.moonlightbutterfly.cryptobets.LoginViewModel
 import com.moonlightbutterfly.cryptobets.repository.BlockchainFacade
 import com.moonlightbutterfly.cryptobets.ui.composables.Bets
 import com.moonlightbutterfly.cryptobets.ui.composables.LocalViewModelFactory
@@ -53,7 +51,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable("${Routes.SUBSCRIBE_TO_BET}/{title}") {
-                                SubscribeToBet(it.arguments?.getString("title")!!) {
+                                SubscribeToBet(it.arguments?.getString("title")!! + "?") {
                                     navController.popBackStack()
                                 }
                             }
