@@ -144,7 +144,7 @@ contract Bets is VRFConsumerBase {
     }
 
     function enter(string memory _option, string memory betName) public payable {
-        require(msg.value > minimumEntrance, "You have to enter minimum 0.001 Ether");
+        require(msg.value >= minimumEntrance, "You have to enter minimum 0.001 Ether");
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betName))) {
                 bets[i].contributors.push(msg.sender);
