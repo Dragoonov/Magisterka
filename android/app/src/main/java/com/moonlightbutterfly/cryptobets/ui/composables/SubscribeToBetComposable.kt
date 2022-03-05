@@ -113,6 +113,7 @@ fun SubscribeToBet(
                     }
                     else -> {
                         viewModel.bet(bet, amount, selectedOption) {
+                            Toast.makeText(context,"Your bet should soon be visible", Toast.LENGTH_LONG).show()
                             onApproved()
                         }
                     }

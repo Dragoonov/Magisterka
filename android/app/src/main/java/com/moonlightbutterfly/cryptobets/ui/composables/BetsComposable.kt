@@ -85,7 +85,7 @@ fun Bets(onBetClicked: (String) -> Unit) {
                 0 -> {
                     items(allBets ?: emptyList()) {
                         Bet(
-                            bet = it,
+                            bet = it.bet,
                             onBetClicked = onBetClicked,
                             showBet = true,
                         )

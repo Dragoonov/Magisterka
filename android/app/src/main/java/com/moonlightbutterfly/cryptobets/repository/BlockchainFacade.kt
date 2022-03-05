@@ -4,13 +4,24 @@ import com.moonlightbutterfly.cryptobets.Bets
 import com.moonlightbutterfly.cryptobets.BuildConfig
 import com.moonlightbutterfly.cryptobets.models.Bet
 import com.moonlightbutterfly.cryptobets.models.BetPlayerInfo
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.datatypes.Function
+import org.web3j.abi.datatypes.Utf8String
 import org.web3j.crypto.Credentials
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.methods.response.TransactionReceipt
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount
+import org.web3j.protocol.core.methods.response.EthSendTransaction
 import org.web3j.protocol.http.HttpService
+import org.web3j.tx.Contract
+import org.web3j.tx.ManagedTransaction
 import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import java.math.BigDecimal
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 
@@ -29,21 +40,27 @@ class BlockchainFacade {
         )
     }
 
-    fun bet(betName: String, option: String, howMuch: Double): CompletableFuture<TransactionReceipt> {
-//        val ethGetTransactionCount: EthGetTransactionCount = web3.ethGetTransactionCount(
-//            credentials.address, DefaultBlockParameterName.LATEST
-//        ).sendAsync().get()
-//        val nonce = ethGetTransactionCount.transactionCount
-//        val gasPrice = DefaultGasProvider.GAS_PRICE
-//        val gasLimit = DefaultGasProvider.GAS_LIMIT
-//        val to = contract.contractAddress
-//        val value = howMuch
-//        val data =
-//        RawTransaction.createTransaction(nonce, gasPrice, gasLimit, to, "")
-//        web3.ethSendRawTransaction()
-        return contract
-            .enter(option, betName, Convert.toWei(BigDecimal(howMuch), Convert.Unit.ETHER).toBigInteger())
-            .sendAsync()
+    fun bet(betName: String, option: String, howMuch: Double): CompletableFuture<EthSendTransaction> {
+        val ethGetTransactionCount: EthGetTransactionCount = web3.ethGetTransactionCount(
+            credentials.address, DefaultBlockParameterName.LATEST
+        ).sendAsync().get()
+        val nonce = ethGetTransactionCount.transactionCount
+        val function = Function(
+            "enter",
+            listOf(Utf8String(option), Utf8String(betName)),
+            Collections.emptyList()
+        )
+        val txData = FunctionEncoder.encode(function)
+        val rawTransaction = RawTransaction.createTransaction(
+            nonce,
+            ManagedTransaction.GAS_PRICE,
+            Contract.GAS_LIMIT,
+            contract.contractAddress,
+            Convert.toWei(BigDecimal(howMuch), Convert.Unit.ETHER).toBigInteger(),
+            txData)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
+        val hexValue = Numeric.toHexString(signedMessage)
+        return web3.ethSendRawTransaction(hexValue).sendAsync()
     }
 
     fun getBetPlayerInfo(
