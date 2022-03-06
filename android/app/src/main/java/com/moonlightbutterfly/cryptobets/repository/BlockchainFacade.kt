@@ -33,7 +33,7 @@ class BlockchainFacade {
     fun initialize(privateKey: String) {
         credentials = Credentials.create(privateKey)
         contract = Bets.load(
-            "0x71cAf37e503CFCb82dB0AF7cF844005adcE853dE",
+            "0x657BC8Ca810e51899e2d7D3D8A967879D5125CF1",
             web3,
             credentials,
             DefaultGasProvider()
@@ -53,8 +53,8 @@ class BlockchainFacade {
         val txData = FunctionEncoder.encode(function)
         val rawTransaction = RawTransaction.createTransaction(
             nonce,
-            ManagedTransaction.GAS_PRICE,
-            Contract.GAS_LIMIT,
+            DefaultGasProvider.GAS_PRICE,
+            DefaultGasProvider.GAS_LIMIT,
             contract.contractAddress,
             Convert.toWei(BigDecimal(howMuch), Convert.Unit.ETHER).toBigInteger(),
             txData)

@@ -59,7 +59,7 @@ fun SubscribeToBet(
         }
         val context = LocalContext.current
         Text(
-            modifier = Modifier.padding(top = 40.dp, bottom = 5.dp),
+            modifier = Modifier.padding(top = 40.dp, bottom = 5.dp, start = 10.dp, end = 10.dp),
             text = bet.title,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
