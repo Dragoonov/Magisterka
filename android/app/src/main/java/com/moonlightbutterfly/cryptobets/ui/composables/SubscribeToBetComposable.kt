@@ -30,10 +30,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moonlightbutterfly.cryptobets.SubscribeViewModel
 import com.moonlightbutterfly.cryptobets.models.Bet
-import com.moonlightbutterfly.cryptobets.ui.MainViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SubscribeToBet(
@@ -112,10 +115,17 @@ fun SubscribeToBet(
                         Toast.makeText(context, "Select an option", Toast.LENGTH_SHORT).show()
                     }
                     else -> {
-                        viewModel.bet(bet, amount, selectedOption) {
-                            Toast.makeText(context,"Your bet should soon be visible", Toast.LENGTH_LONG).show()
-                            onApproved()
+                        viewModel.viewModelScope.launch(Dispatchers.IO) {
+                            val transaction = viewModel.bet(bet, amount, selectedOption).get()
+                            withContext(Dispatchers.Main) {
+                                if (transaction.hasError()) {
+                                    Toast.makeText(context, transaction.error.message, Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Your bet should be visible soon", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
+                        onApproved()
                     }
                 }
             }

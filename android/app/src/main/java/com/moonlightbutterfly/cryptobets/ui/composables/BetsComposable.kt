@@ -6,6 +6,7 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -207,6 +208,7 @@ fun Bet(
         Modifier
             .fillMaxWidth()
             .fillMaxHeight()
+            .clickable(showBet) { onBetClicked(bet.title) }
             .padding(10.dp),
         elevation = 10.dp
     ) {
