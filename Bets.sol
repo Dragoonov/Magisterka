@@ -188,20 +188,23 @@ contract Bets is VRFConsumerBase {
 
     function giveOutMoney() private {
         uint256 contributedAmount = 0;
+        uint256 contributionPerAddress = 0;
         for (uint256 i = 0; i < bets.length; i++) {
             if (keccak256(bytes(bets[i].name)) == keccak256(bytes(betToResolve))) {
                 for (uint256 j = 0; j < bets[i].contributors.length; j++) {
                     address adr = bets[i].contributors[j];
                     if (didAddressWin(adr, bets[i].name)) {
                         winnersList.push(adr);
-                        contributedAmount += getContributionForAddress(adr, betToResolve);
+                        contributionPerAddress = getContributionForAddress(adr, betToResolve);
+                        contributedAmount += contributionPerAddress;
                     }
                 }
                 if (winnersList.length > 0) {
                     uint256 reward = (bets[i].totalRewardPool - contributedAmount) / winnersList.length;
                     bets[i].reward = reward;
                     for (uint256 j = 0; j < winnersList.length; j++) {
-                        payable(winnersList[j]).transfer(reward);
+                        contributionPerAddress = getContributionForAddress(winnersList[j], betToResolve);
+                        payable(winnersList[j]).transfer(reward + contributionPerAddress);
                     }
                 }
                 bets[i].totalRewardPool = 0;
